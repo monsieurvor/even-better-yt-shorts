@@ -68,6 +68,11 @@ const getActionElement = (id) =>
     `[id='${id}']  > div.overlay.style-scope.ytd-reel-video-renderer > ytd-reel-player-overlay-renderer > #actions`
   );
 
+const getProgressBarElement = (id) =>
+  document.querySelector(
+    `[id='${id}']  > div.overlay.style-scope.ytd-reel-video-renderer > ytd-reel-player-overlay-renderer > #overlay > #progress-bar > ytd-progress-bar-line > #progress-bar-line`
+  );
+
 const setTimer = (currTime, duration) => {
   document.getElementById(
     `ytTimer${getCurrentId()}`
@@ -137,6 +142,7 @@ var injectedItem = new Set();
 var lastTime = -1;
 var lastSpeed = 0;
 var setSpeed = 1;
+var clientWidth = 455;
 
 const timer = setInterval(() => {
   const ytShorts = document.querySelector(
@@ -144,6 +150,7 @@ const timer = setInterval(() => {
   );
   var currentId = getCurrentId();
   var actionList = getActionElement(currentId);
+  var progressBarList = getProgressBarElement(currentId);
 
   if (injectedItem.has(currentId)) {
     var currTime = Math.round(ytShorts.currentTime);
@@ -160,7 +167,7 @@ const timer = setInterval(() => {
   } else {
     lastTime = -1;
     lastSpeed = 0;
-
+ 
     if (actionList) {
       //Container div
       const timerContainer = document.createElement("div");
@@ -193,6 +200,20 @@ const timer = setInterval(() => {
           ytShorts.playbackRate = 1;
           setSpeed = ytShorts.playbackRate;
       });
+    }
+    if (progressBarList) {
+      const progressBarContainer = document.createElement("div");
+      progressBarContainer.classList.add("betterYT-scrubber-container", "ytp-scrubber-container");
+      var progressPosition = (ytShorts.currentTime / ytShorts.duration) * ytShorts.clientWidth;
+      progressBarContainer.style.transform = `translateX(${progressPosition}px)`;
+      // progressBarContainer.style.position = 'absolute';
+      // progressBarContainer.style.top = '-4px';
+      // progressBarContainer.style.zIndex = '43';
+      var progressBarButton = document.createElement("div");
+      progressBarButton.classList.add("ytp-scrubber-button", "ytp-swatch-background-color");
+      progressBarContainer.appendChild(progressBarButton);
+
+      progressBarList.appendChild(progressBarContainer);
     }
     setVolumeSlider();
   }
