@@ -55,6 +55,7 @@ document.addEventListener("keydown", (data) => {
   setSpeed = ytShorts.playbackRate;
 });
 
+
 const getCurrentId = () => {
   const videoEle = document.querySelector(
     "#shorts-player > div.html5-video-container > video"
@@ -66,12 +67,17 @@ const getCurrentId = () => {
 const getActionElement = (id) =>
   document.querySelector(
     `[id='${id}']  > div.overlay.style-scope.ytd-reel-video-renderer > ytd-reel-player-overlay-renderer > #actions`
-  );
+);
 
 const getProgressBarElement = (id) =>
   document.querySelector(
     `[id='${id}']  > div.overlay.style-scope.ytd-reel-video-renderer > ytd-reel-player-overlay-renderer > #overlay > #progress-bar > ytd-progress-bar-line > #progress-bar-line`
-  );
+);
+
+const getInfoSection = (id) =>
+  document.querySelector(
+    `[id='${id}']  > div.overlay.style-scope.ytd-reel-video-renderer > ytd-reel-player-overlay-renderer > #overlay`
+);
 
 const setTimer = (currTime, duration) => {
   document.getElementById(
@@ -142,7 +148,6 @@ var injectedItem = new Set();
 var lastTime = -1;
 var lastSpeed = 0;
 var setSpeed = 1;
-var clientWidth = 455;
 
 const timer = setInterval(() => {
   const ytShorts = document.querySelector(
@@ -151,6 +156,7 @@ const timer = setInterval(() => {
   var currentId = getCurrentId();
   var actionList = getActionElement(currentId);
   var progressBarList = getProgressBarElement(currentId);
+  var infoSection = getInfoSection(currentId);
 
   if (injectedItem.has(currentId)) {
     var currTime = Math.round(ytShorts.currentTime);
@@ -202,18 +208,37 @@ const timer = setInterval(() => {
       });
     }
     if (progressBarList) {
-      const progressBarContainer = document.createElement("div");
-      progressBarContainer.classList.add("betterYT-scrubber-container", "ytp-scrubber-container");
+      progressBarList.style.height = "5px";
+      progressBarList.children[0].classList.add('betterYT-progress-bar');
+      progressBarList.children[1].classList.add('betterYT-progress-bar');
+      const scrubberContainer = document.createElement("div");
+      scrubberContainer.classList.add("betterYT-scrubber-container", "ytp-scrubber-container");
       var progressPosition = (ytShorts.currentTime / ytShorts.duration) * ytShorts.clientWidth;
-      progressBarContainer.style.transform = `translateX(${progressPosition}px)`;
-      // progressBarContainer.style.position = 'absolute';
-      // progressBarContainer.style.top = '-4px';
-      // progressBarContainer.style.zIndex = '43';
-      var progressBarButton = document.createElement("div");
-      progressBarButton.classList.add("ytp-scrubber-button", "ytp-swatch-background-color");
-      progressBarContainer.appendChild(progressBarButton);
+      scrubberContainer.style.transform = `translateX(${progressPosition}px)`;
+      // scrubberContainer.style.position = 'absolute';
+      // scrubberContainer.style.top = '-4px';
+      // scrubberContainer.style.zIndex = '43';
+      var scrubberButton = document.createElement("div");
+      scrubberButton.classList.add("ytp-scrubber-button", "ytp-swatch-background-color");
+      scrubberContainer.appendChild(scrubberButton);
 
-      progressBarList.appendChild(progressBarContainer);
+      progressBarList.appendChild(scrubberContainer);
+
+      infoSection.addEventListener("mouseover", () => {
+        progressBarList.children[0].classList.add('betterYT-progress-bar-hover');
+        progressBarList.children[1].classList.add('betterYT-progress-bar-hover');
+      });
+      infoSection.addEventListener("mouseout", () => {
+        progressBarList.children[0].classList.remove('betterYT-progress-bar-hover');
+        progressBarList.children[1].classList.remove('betterYT-progress-bar-hover');   
+      });
+
+      // infoSection.addEventListener("mouseover", () => {
+      //   scrubberContainer.style.display = "absolute"; 
+      // });
+      // infoSection.addEventListener("mouseout", () => {
+      //   scrubberContainer.style.display = "none"; 
+      // });
     }
     setVolumeSlider();
   }
