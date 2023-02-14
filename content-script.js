@@ -2,6 +2,8 @@ var muted = false;
 var volumeState = 0;
 var volumeCounter = 1;
 var actualVolume = 0;
+var mouseX;
+
 document.addEventListener("keydown", (data) => {
   if (document.activeElement === document.querySelector(`input`)) return; // Avoids using keys while the user interacts with any input, like search.
   const ytShorts = document.querySelector(
@@ -150,6 +152,7 @@ const timer = setInterval(() => {
   );
   var currentId = getCurrentId();
   var actionList = getActionElement(currentId);
+  var overlayList = getOverlayElement(currentId);
 
   if (injectedItem.has(currentId)) {
     var currTime = Math.round(ytShorts.currentTime);
@@ -201,56 +204,74 @@ const timer = setInterval(() => {
       });
     }
 
-    if (ytShorts.duration >= 30) {
-      var overlayList = getOverlayElement(currentId);
-      var progressBarList = overlayList.children[2].children[0].children[0];
-      var progressBarBG = progressBarList.children[0];
-      var progressBarRed = progressBarList.children[1];
-    
-      if (overlayList) {
-        overlayList.children[0].style.marginBottom = "-5px";
-        progressBarList.style.height = "8px";
-        progressBarList.classList.add('betterYT-progress-bar');
-        progressBarBG.classList.add('betterYT-progress-bar');
-        progressBarRed.classList.add('betterYT-progress-bar');
-        const scrubberContainer = document.createElement("div");
-        scrubberContainer.classList.add("betterYT-scrubber-container", "ytp-scrubber-container");
-        var progressPosition = (ytShorts.currentTime / ytShorts.duration) * ytShorts.clientWidth;
-        scrubberContainer.style.transform = `translateX(${progressPosition}px)`;
-        // scrubberContainer.style.position = 'absolute';
-        // scrubberContainer.style.top = '-4px';
-        // scrubberContainer.style.zIndex = '43';
-        var scrubberButton = document.createElement("div");
-        scrubberButton.classList.add("ytp-scrubber-button", "ytp-swatch-background-color");
-        scrubberContainer.appendChild(scrubberButton);
+    // Progress bar
+    if (overlayList) {
+      var progBarList = overlayList.children[2].children[0].children[0];
+      var progBarBG = progBarList.children[0];
+      var progBarPlayed = progBarList.children[1]; // The red part of the progress bar
 
-        progressBarList.appendChild(scrubberContainer);
-
-        overlayList.addEventListener("mouseover", () => {
-          progressBarBG.style.height = "5px";
-          progressBarRed.style.height = "5px";
-        });
-        overlayList.addEventListener("mouseout", () => {
-          progressBarBG.style.height = "3px";
-          progressBarRed.style.height = "3px";
-        });
-
-        progressBarList.addEventListener("mouseover", () => {
-          progressBarBG.classList.add('betterYT-progress-bar-hover');
-          progressBarRed.classList.add('betterYT-progress-bar-hover');
-          // scrubberContainer.style.display = "absolute"; 
-        });
-        progressBarList.addEventListener("mouseout", () => {
-          progressBarBG.classList.remove('betterYT-progress-bar-hover');
-          progressBarRed.classList.remove('betterYT-progress-bar-hover');
-          // scrubberContainer.style.display = "none"; 
-        });
-
-        progressBarList.addEventListener("click", function(event) {
-          const x = event.clientX - progressBarList.getBoundingClientRect().left;
-          console.log("Clicked at position: " + x);
-        })
+      // Force progress bar to be visible for sub-30s shorts
+      if (ytShorts.duration < 30) {
+        progBarList.removeAttribute("hidden"); 
       }
+
+      const timestampTooltip = document.createElement("div");
+      timestampTooltip.classList.add("betterYT-timestamp-tooltip");
+
+      progBarList.appendChild(timestampTooltip);
+
+      // Styling to ensure rest of bottom overlay (shorts title/sub button) stay in place
+      overlayList.children[0].style.marginBottom = "-8px";
+      progBarList.style.height = "11px";
+      progBarList.style.paddingTop = "2px"; // Slight padding to increase hover box
+
+      progBarList.classList.add('betterYT-progress-bar');
+      progBarBG.classList.add('betterYT-progress-bar');
+      progBarPlayed.classList.add('betterYT-progress-bar');
+
+      overlayList.addEventListener("mouseover", () => {
+        progBarBG.classList.add('betterYT-progress-bar-hover-overlay');
+        progBarPlayed.classList.add('betterYT-progress-bar-hover-overlay');
+      });
+      overlayList.addEventListener("mouseout", () => {
+        progBarBG.classList.remove('betterYT-progress-bar-hover-overlay');
+        progBarPlayed.classList.remove('betterYT-progress-bar-hover-overlay');
+      });
+
+      progBarList.addEventListener("mouseover", () => {
+        progBarBG.classList.add('betterYT-progress-bar-hover');
+        progBarPlayed.classList.add('betterYT-progress-bar-hover');
+      });
+      progBarList.addEventListener("mousemove", (event) => {
+        let x = event.clientX - progBarList.getBoundingClientRect().left;
+        // Deal with slight inaccuracies
+        if (x < 0) x = 0;
+        if (x > progBarList.clientWidth) x = progBarList.clientWidth;
+        // Get timestamp and round to nearest 0.1
+        let timestamp = ((x / progBarList.clientWidth) * ytShorts.duration).toFixed(1);
+        timestampTooltip.textContent = `${timestamp}s`;
+        // Ensure tooltip stays visible at edges of client
+        if ((x - (timestampTooltip.offsetWidth / 2)) > (progBarList.clientWidth - timestampTooltip.offsetWidth)) {
+          timestampTooltip.style.left = `${progBarList.clientWidth - timestampTooltip.offsetWidth}px`;
+        } else if ((x - (timestampTooltip.offsetWidth / 2)) <= 0) {
+          timestampTooltip.style.left = "0px";
+        } else {
+          timestampTooltip.style.left = `${x - (timestampTooltip.offsetWidth / 2)}px`;
+        }
+        timestampTooltip.style.top = "-20px";
+        timestampTooltip.style.display = 'block';
+      });
+      progBarList.addEventListener("mouseout", () => {
+        progBarBG.classList.remove('betterYT-progress-bar-hover');
+        progBarPlayed.classList.remove('betterYT-progress-bar-hover');
+        timestampTooltip.style.display = 'none';
+      });
+      progBarList.addEventListener("click", (event) => {
+        let x = event.clientX - progBarList.getBoundingClientRect().left;
+        if (x < 0) x = 0;
+        if (x > progBarList.clientWidth) x = progBarList.clientWidth;
+        ytShorts.currentTime = (x / progBarList.clientWidth) * ytShorts.duration;
+      });
     }
     setVolumeSlider();
   }
