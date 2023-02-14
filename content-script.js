@@ -87,6 +87,7 @@ const setTimer = (currTime, duration) => {
 
 const setVolumeSlider = () => {
   let index = parseFloat(getCurrentId()) + volumeCounter;
+  console.log('stuff: ', document.querySelectorAll('yt-icon-button.style-scope.ytd-shorts-player-controls'));
   const volumeContainer = document.querySelectorAll(`yt-icon-button.style-scope.ytd-shorts-player-controls`)[index].parentNode;
   const slider = document.createElement('input');
   if(!actualVolume){
