@@ -69,12 +69,7 @@ const getActionElement = (id) =>
     `[id='${id}']  > div.overlay.style-scope.ytd-reel-video-renderer > ytd-reel-player-overlay-renderer > #actions`
 );
 
-const getProgressBarElement = (id) =>
-  document.querySelector(
-    `[id='${id}']  > div.overlay.style-scope.ytd-reel-video-renderer > ytd-reel-player-overlay-renderer > #overlay > #progress-bar > ytd-progress-bar-line > #progress-bar-line`
-);
-
-const getInfoSection = (id) =>
+const getOverlayElement = (id) =>
   document.querySelector(
     `[id='${id}']  > div.overlay.style-scope.ytd-reel-video-renderer > ytd-reel-player-overlay-renderer > #overlay`
 );
@@ -155,8 +150,6 @@ const timer = setInterval(() => {
   );
   var currentId = getCurrentId();
   var actionList = getActionElement(currentId);
-  var progressBarList = getProgressBarElement(currentId);
-  var infoSection = getInfoSection(currentId);
 
   if (injectedItem.has(currentId)) {
     var currTime = Math.round(ytShorts.currentTime);
@@ -207,38 +200,57 @@ const timer = setInterval(() => {
           setSpeed = ytShorts.playbackRate;
       });
     }
-    if (progressBarList) {
-      progressBarList.style.height = "5px";
-      progressBarList.children[0].classList.add('betterYT-progress-bar');
-      progressBarList.children[1].classList.add('betterYT-progress-bar');
-      const scrubberContainer = document.createElement("div");
-      scrubberContainer.classList.add("betterYT-scrubber-container", "ytp-scrubber-container");
-      var progressPosition = (ytShorts.currentTime / ytShorts.duration) * ytShorts.clientWidth;
-      scrubberContainer.style.transform = `translateX(${progressPosition}px)`;
-      // scrubberContainer.style.position = 'absolute';
-      // scrubberContainer.style.top = '-4px';
-      // scrubberContainer.style.zIndex = '43';
-      var scrubberButton = document.createElement("div");
-      scrubberButton.classList.add("ytp-scrubber-button", "ytp-swatch-background-color");
-      scrubberContainer.appendChild(scrubberButton);
 
-      progressBarList.appendChild(scrubberContainer);
+    if (ytShorts.duration >= 30) {
+      var overlayList = getOverlayElement(currentId);
+      var progressBarList = overlayList.children[2].children[0].children[0];
+      var progressBarBG = progressBarList.children[0];
+      var progressBarRed = progressBarList.children[1];
+    
+      if (overlayList) {
+        overlayList.children[0].style.marginBottom = "-5px";
+        progressBarList.style.height = "8px";
+        progressBarList.classList.add('betterYT-progress-bar');
+        progressBarBG.classList.add('betterYT-progress-bar');
+        progressBarRed.classList.add('betterYT-progress-bar');
+        const scrubberContainer = document.createElement("div");
+        scrubberContainer.classList.add("betterYT-scrubber-container", "ytp-scrubber-container");
+        var progressPosition = (ytShorts.currentTime / ytShorts.duration) * ytShorts.clientWidth;
+        scrubberContainer.style.transform = `translateX(${progressPosition}px)`;
+        // scrubberContainer.style.position = 'absolute';
+        // scrubberContainer.style.top = '-4px';
+        // scrubberContainer.style.zIndex = '43';
+        var scrubberButton = document.createElement("div");
+        scrubberButton.classList.add("ytp-scrubber-button", "ytp-swatch-background-color");
+        scrubberContainer.appendChild(scrubberButton);
 
-      infoSection.addEventListener("mouseover", () => {
-        progressBarList.children[0].classList.add('betterYT-progress-bar-hover');
-        progressBarList.children[1].classList.add('betterYT-progress-bar-hover');
-      });
-      infoSection.addEventListener("mouseout", () => {
-        progressBarList.children[0].classList.remove('betterYT-progress-bar-hover');
-        progressBarList.children[1].classList.remove('betterYT-progress-bar-hover');   
-      });
+        progressBarList.appendChild(scrubberContainer);
 
-      // infoSection.addEventListener("mouseover", () => {
-      //   scrubberContainer.style.display = "absolute"; 
-      // });
-      // infoSection.addEventListener("mouseout", () => {
-      //   scrubberContainer.style.display = "none"; 
-      // });
+        overlayList.addEventListener("mouseover", () => {
+          progressBarBG.style.height = "5px";
+          progressBarRed.style.height = "5px";
+        });
+        overlayList.addEventListener("mouseout", () => {
+          progressBarBG.style.height = "3px";
+          progressBarRed.style.height = "3px";
+        });
+
+        progressBarList.addEventListener("mouseover", () => {
+          progressBarBG.classList.add('betterYT-progress-bar-hover');
+          progressBarRed.classList.add('betterYT-progress-bar-hover');
+          // scrubberContainer.style.display = "absolute"; 
+        });
+        progressBarList.addEventListener("mouseout", () => {
+          progressBarBG.classList.remove('betterYT-progress-bar-hover');
+          progressBarRed.classList.remove('betterYT-progress-bar-hover');
+          // scrubberContainer.style.display = "none"; 
+        });
+
+        progressBarList.addEventListener("click", function(event) {
+          const x = event.clientX - progressBarList.getBoundingClientRect().left;
+          console.log("Clicked at position: " + x);
+        })
+      }
     }
     setVolumeSlider();
   }

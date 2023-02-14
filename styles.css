@@ -46,8 +46,10 @@
 
 .betterYT-progress-bar{
     bottom: 0;
+    pointer-events: auto !important;
 }
 
 .betterYT-progress-bar-hover{
-    height: 5px !important;
+    height: 8px !important;
+    cursor: pointer;
 }
