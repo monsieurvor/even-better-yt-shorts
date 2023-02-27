@@ -1,7 +1,7 @@
 {
     "name": "Better YouTube Shorts",
     "description": "Playback, volume controls (with custom keybinds), timestamp, and progress bar seeking on YouTube Shorts.",
-    "version": "2.1.1",
+    "version": "2.2.1",
     "manifest_version": 3,
     "permissions": ["storage"],
     "action": {
@@ -13,7 +13,10 @@
     "content_scripts": [
         {
             "matches": ["https://*.youtube.com/*"],
-            "js": ["content-script.js"],
+            "js": [
+                "browser-polyfill.js",
+                "content-script.js"
+            ],
             "css": ["styles.css"]
         }
     ],

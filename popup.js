@@ -1,4 +1,4 @@
-const version = chrome.runtime.getManifest().version;
+const version = browser.runtime.getManifest().version;
 document.getElementById('version').textContent = version;
 
 const modal = document.getElementById("edit-modal");
@@ -7,7 +7,7 @@ const editBtnList = document.querySelectorAll(".edit-btn");
 const closeBtn = document.querySelector(".close-btn");
 const keybindInput = document.getElementById("keybind-input");
 let modalTitleSpan = document.getElementById("modal-title-span");
-let invalidKeybinds = ['backspace', 'enter', 'escape', 'tab', ' ', 'space', 'pageUp', 'pagedown', 'arrowup', 'arrowdown', 'printscreen', 'meta'];
+let invalidKeybinds = ['backspace', 'enter', 'escape', 'tab', ' ', 'space', 'pageup', 'pagedown', 'arrowup', 'arrowdown', 'printscreen', 'meta'];
 
 const defaultKeybinds = {
     'Seek Backward': 'j',
@@ -24,7 +24,7 @@ let currentKeybindArray = [];
 let keybindState = '';
 
 // Get keybinds from storage
-chrome.storage.local.get(['keybinds'])
+browser.storage.local.get(['keybinds'])
 .then((result) => {
     let updatedkeybinds = result['keybinds'];
     if (updatedkeybinds) {
@@ -53,7 +53,7 @@ resetBtn.onclick = () => {
     currentKeybindArray = Object.values(currentKeybinds);
     for (const [command, keybind] of Object.entries(defaultKeybinds)) {
         document.getElementById(command+'-span').textContent = keybind;
-        chrome.storage.local.set({ 'keybinds' : defaultKeybinds });
+        browser.storage.local.set({ 'keybinds' : defaultKeybinds });
     }
 }
 
@@ -69,7 +69,6 @@ window.onclick = (event) => {
 keybindInput.addEventListener('keydown', (event) => {
     event.preventDefault();
     var keybind = event.key.toLowerCase();
-    console.log(keybind);
     if (invalidKeybinds.includes(keybind)) {
         if (keybind === ' ') keybind = 'space';
         keybindInput.value = "";
@@ -86,7 +85,7 @@ keybindInput.addEventListener('keydown', (event) => {
     document.getElementById(keybindState+'-span').textContent = keybind;
     currentKeybinds[keybindState] = keybind;
     currentKeybindArray = Object.values(currentKeybinds);
-    chrome.storage.local.set({ 'keybinds' : currentKeybinds })
+    browser.storage.local.set({ 'keybinds' : currentKeybinds })
     .then(() => {
         keybindInput.value = "";
         closeBtn.click(); 

@@ -1,10 +1,12 @@
+// import browser from 'webextension-polyfill';
 var muted = false;
 var volumeState = 0;
 var actualVolume = 0;
-var mouseX;
+
+console.log('browser', browser);
 // Using localStorage as a fallback for chrome.storage.local
 var keybinds = JSON.parse(localStorage.getItem("yt-keybinds"));
-chrome.storage.local.get(["keybinds"])
+browser.storage.local.get(["keybinds"])
 .then((result) => {
   if (result.keybinds) {
     if (result.keybinds !== keybinds) localStorage.setItem("yt-keybinds", JSON.stringify(result.keybinds));
